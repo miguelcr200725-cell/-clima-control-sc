@@ -2,228 +2,346 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<link rel="manifest" href="./manifest.json">
-<meta name="theme-color" content="#0789ef">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#071525">
+<meta name="theme-color" content="#0789ef">
+<link rel="manifest" href="./manifest.json">
 <title>CLIMA CONTROL SC</title>
 <style>
+:root{--blue:#0789ef;--bg:#071525;--panel:#10243a;--silver:#c6d5e5;--muted:#8da5bd}
 *{box-sizing:border-box}
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js")
-      .then(() => console.log("CLIMA CONTROL SC listo"))
-      .catch(error => console.error("Error:", error));
-  });
-}
-</script>
-body{margin:0;background:#071525;color:#eef6ff;font-family:Arial,sans-serif}
-header{padding:24px 18px;background:linear-gradient(135deg,#071525,#0755a5);border-bottom:2px solid #159bff}
-h1{font-size:23px;margin:0;color:#36aaff}
-header p{color:#c3d5e6;margin:8px 0 0}
-main{max-width:750px;margin:auto;padding:18px}
-.panel{background:#10243a;border:1px solid #294663;border-radius:15px;padding:18px;margin-bottom:17px}
-h2{font-size:19px;color:#9bcfff;margin-top:0}
-input,textarea{width:100%;padding:13px;margin:7px 0 12px;border:1px solid #52718e;border-radius:9px;background:#071525;color:white;font-size:16px}
-button{padding:13px 17px;border:0;border-radius:9px;background:#0789ef;color:white;font-weight:bold;font-size:15px;margin:4px 3px 4px 0}
-button.secondary{background:#52677b}
-button.danger{background:#a83242}
-.small{font-size:13px;color:#a9bfd2}
-.hidden{display:none}
-.customer{padding:13px;border:1px solid #35516d;border-radius:10px;margin:10px 0;background:#0a1b2c}
-.customer strong{color:#68baff;font-size:17px}
-.customer p{margin:7px 0;color:#d2dfeb}
-#status{color:#8dd1ff;font-size:14px}
+body{margin:0;background:var(--bg);color:white;font-family:Arial,sans-serif}
+header{padding:20px;background:linear-gradient(120deg,#092d50,#071525);border-bottom:1px solid #168fe9}
+header h1{margin:0;color:#36aaff;font-size:23px}
+header p{margin:6px 0 0;color:#b6c9dc;font-size:12px}
+main{max-width:900px;margin:auto;padding:15px}
+.panel{background:var(--panel);border:1px solid #24415d;border-radius:14px;padding:16px;margin:12px 0}
+h2{font-size:19px;color:#55baff;margin:0 0 14px}
+h3{font-size:15px;color:#d5e5f5}
+input,select,textarea{width:100%;padding:12px;margin:6px 0 12px;border-radius:8px;border:1px solid #34536f;background:#091a2c;color:white;font-size:15px}
+button{background:var(--blue);color:white;border:0;border-radius:9px;padding:12px 15px;font-weight:bold;cursor:pointer;margin:4px 3px 4px 0}
+button.secondary{background:#263f58;color:#d9e8f6}
+button.danger{background:#9b3445}
+nav{display:flex;gap:7px;overflow-x:auto;padding:10px 0}
+nav button{white-space:nowrap}
+.item{background:#0a1c2e;border:1px solid #29445e;border-radius:10px;padding:13px;margin:9px 0}
+.item strong{color:#66bdff}
+small,.muted{color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.stat{background:#0a1c2e;padding:14px;border-radius:10px;border:1px solid #29445e}
+.stat b{display:block;font-size:25px;color:#4eb5ff;margin-top:6px}
+.hidden{display:none!important}
+label{font-size:13px;color:#c3d5e7}
+#status{color:#70c5ff;font-size:13px}
+@media(max-width:500px){.grid{grid-template-columns:1fr 1fr}main{padding:10px}}
 </style>
 </head>
 <body>
 <header>
 <h1>❄ CLIMA CONTROL SC</h1>
-<p>Gestión profesional de climatización</p>
+<p>GESTIÓN PROFESIONAL DE CLIMATIZACIÓN</p>
 </header>
 <main>
-<div id="login" class="panel">
-<h2 id="formTitle">Iniciar sesión</h2>
-<p class="small">Acceso privado para técnicos</p>
-<div id="nameArea" class="hidden">
-<label>Nombre del técnico</label>
-<input id="name" placeholder="Tu nombre">
-</div>
+<section id="auth" class="panel">
+<h2>Acceso al sistema</h2>
+<div id="loginBox">
 <label>Correo electrónico</label>
-<input id="email" type="email" placeholder="correo@ejemplo.com">
+<input id="email" type="email" placeholder="Tu correo">
 <label>Contraseña</label>
-<input id="password" type="password" placeholder="Contraseña">
-<button id="enter">Iniciar sesión</button>
-<button id="toggle" class="secondary">Crear cuenta</button>
+<input id="password" type="password" placeholder="Tu contraseña">
+<button id="loginBtn">Ingresar</button>
+<button class="secondary" id="showRegister">Crear cuenta</button>
+</div>
+<div id="registerBox" class="hidden">
+<h3>Crear cuenta de técnico</h3>
+<input id="newEmail" type="email" placeholder="Correo electrónico">
+<input id="newPassword" type="password" placeholder="Contraseña (mínimo 6 caracteres)">
+<button id="registerBtn">Registrarme</button>
+<button class="secondary" id="showLogin">Volver</button>
+</div>
+<p id="authMessage"></p>
+</section>
+
+<section id="app" class="hidden">
+<div class="panel">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+<div><small>Sesión iniciada</small><div id="userEmail"></div></div>
+<button class="secondary" id="logoutBtn">Salir</button>
+</div>
+</div>
+
+<div class="grid">
+<div class="stat">Clientes registrados<b id="countClients">0</b></div>
+<div class="stat">Trabajos agendados<b id="countJobs">0</b></div>
+<div class="stat">Próximos mantenimientos<b id="countSoon">0</b></div>
+<div class="stat">Mantenimientos vencidos<b id="countLate">0</b></div>
+</div>
+
+<nav>
+<button data-tab="home">Inicio</button>
+<button data-tab="clients">Clientes</button>
+<button data-tab="agenda">Agenda</button>
+<button data-tab="history">Historial</button>
+<button data-tab="reminders">Mantenimientos</button>
+</nav>
+
+<section id="tab-home" class="panel">
+<h2>Panel principal</h2>
+<p>Bienvenido a CLIMA CONTROL SC.</p>
+<p class="muted">Administra tus clientes, instalaciones, mantenimientos y servicios desde un solo lugar.</p>
+<div id="todayJobs"></div>
+</section>
+
+<section id="tab-clients" class="panel hidden">
+<h2>Registro de clientes</h2>
+<input id="clientSearch" placeholder="Buscar por nombre o teléfono">
+<h3>Agregar cliente</h3>
+<input id="clientName" placeholder="Nombre del cliente">
+<input id="clientPhone" placeholder="Teléfono">
+<input id="clientAddress" placeholder="Dirección">
+<label>Tipo de equipo</label>
+<select id="clientEquipment">
+<option>Split</option><option>Inverter</option><option>Central</option><option>Otro</option>
+</select>
+<label>Intervalo de mantenimiento</label>
+<select id="clientInterval">
+<option value="3">Cada 3 meses</option>
+<option value="4">Cada 4 meses</option>
+<option value="6" selected>Cada 6 meses</option>
+<option value="12">Cada 12 meses</option>
+</select>
+<button id="saveClient">Guardar cliente</button>
+<div id="clientList"></div>
+</section>
+
+<section id="tab-agenda" class="panel hidden">
+<h2>Agenda de trabajos</h2>
+<h3>Agendar instalación o mantenimiento</h3>
+<label>Cliente</label>
+<select id="jobClient"></select>
+<label>Tipo de trabajo</label>
+<select id="jobType">
+<option>Instalación</option><option>Mantenimiento</option><option>Reparación</option><option>Inspección</option>
+</select>
+<label>Fecha</label>
+<input id="jobDate" type="date">
+<label>Hora</label>
+<input id="jobTime" type="time">
+<textarea id="jobNotes" placeholder="Observaciones del trabajo"></textarea>
+<button id="saveJob">Guardar en agenda</button>
+<h3>Trabajos programados</h3>
+<input id="agendaDate" type="date">
+<div id="jobList"></div>
+</section>
+
+<section id="tab-history" class="panel hidden">
+<h2>Historial de servicios</h2>
+<h3>Registrar servicio realizado</h3>
+<label>Cliente</label>
+<select id="historyClient"></select>
+<label>Tipo de servicio</label>
+<select id="historyType">
+<option>Instalación</option><option>Mantenimiento</option><option>Reparación</option><option>Inspección</option>
+</select>
+<label>Fecha del servicio</label>
+<input id="historyDate" type="date">
+<textarea id="historyNotes" placeholder="Trabajo realizado, materiales y observaciones"></textarea>
+<button id="saveHistory">Guardar historial</button>
+<div id="historyList"></div>
+</section>
+
+<section id="tab-reminders" class="panel hidden">
+<h2>Control de mantenimientos</h2>
+<p class="muted">Los vencimientos se calculan según el último servicio registrado y el intervalo de cada cliente.</p>
+<div id="reminderList"></div>
+</section>
 <p id="status"></p>
-</div>
-
-<div id="app" class="hidden">
-<div class="panel">
-<h2>Panel de trabajo</h2>
-<p id="welcome"></p>
-<button id="logout" class="danger">Cerrar sesión</button>
-</div>
-
-<div class="panel">
-<h2>Registrar nuevo cliente</h2>
-<label>Nombre del cliente</label>
-<input id="clientName" placeholder="Nombre completo">
-<label>Teléfono</label>
-<input id="phone" type="tel" placeholder="Número de teléfono">
-<label>Dirección</label>
-<input id="address" placeholder="Dirección del cliente">
-<label>Observaciones</label>
-<textarea id="notes" placeholder="Equipo, capacidad BTU, detalles..."></textarea>
-<button id="save">Guardar cliente</button>
-<p id="saveStatus" class="small"></p>
-</div>
-
-<div class="panel">
-<h2>Mis clientes</h2>
-<input id="search" placeholder="Buscar cliente...">
-<div id="clients">Todavía no hay clientes registrados.</div>
-</div>
-</div>
+</section>
 </main>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-import {
- getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
- onAuthStateChanged, signOut, updateProfile
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-import {
- getFirestore, collection, addDoc, onSnapshot, serverTimestamp
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+import {initializeApp} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import {getFirestore,collection,addDoc,getDocs,deleteDoc,doc,query,orderBy,serverTimestamp} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-const firebaseConfig = {
- apiKey: "AIzaSyC9nFbwuZ3osVMu40X-CfP4_ScYAfvj3u8",
- authDomain: "clima-control-sc-f6a1a.firebaseapp.com",
- projectId: "clima-control-sc-f6a1a",
- storageBucket: "clima-control-sc-f6a1a.firebasestorage.app",
- messagingSenderId: "672050898146",
- appId: "1:672050898146:web:e1618a8cd6a08dd1c0eabb",
- measurementId: "G-JKJR22LHSW"
+const firebaseConfig={
+apiKey:"AIzaSyC9nFbwuZ3osVMu40X-CfP4_ScYAfvj3u8",
+authDomain:"clima-control-sc-f6a1a.firebaseapp.com",
+projectId:"clima-control-sc-f6a1a",
+storageBucket:"clima-control-sc-f6a1a.firebasestorage.app",
+messagingSenderId:"672050898146",
+appId:"1:672050898146:web:e1618a8cd6a08dd1c0eabb",
+measurementId:"G-JKJR22LHSW"
 };
 
-const appFirebase = initializeApp(firebaseConfig);
-const auth = getAuth(appFirebase);
-const db = getFirestore(appFirebase);
+const appFirebase=initializeApp(firebaseConfig);
+const auth=getAuth(appFirebase);
+const db=getFirestore(appFirebase);
+let currentUser=null,clients=[],jobs=[],history=[];
+const $=id=>document.getElementById(id);
+const safe=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const path=(name)=>collection(db,"users",currentUser.uid,name);
+const say=t=>$("status").textContent=t;
+const today=()=>new Date().toISOString().slice(0,10);
+$("jobDate").value=today();
+$("agendaDate").value=today();
+$("historyDate").value=today();
 
-let creating = false;
-let unsubscribe = null;
-let allClients = [];
-
-const $ = id => document.getElementById(id);
-
-$("toggle").onclick = () => {
- creating = !creating;
- $("formTitle").textContent = creating ? "Crear cuenta de técnico" : "Iniciar sesión";
- $("nameArea").classList.toggle("hidden",!creating);
- $("enter").textContent = creating ? "Crear mi cuenta" : "Iniciar sesión";
- $("toggle").textContent = creating ? "Volver al inicio de sesión" : "Crear cuenta";
- $("status").textContent = "";
+$("showRegister").onclick=()=>{$("loginBox").classList.add("hidden");$("registerBox").classList.remove("hidden");};
+$("showLogin").onclick=()=>{$("registerBox").classList.add("hidden");$("loginBox").classList.remove("hidden");};
+$("registerBtn").onclick=async()=>{
+try{
+await createUserWithEmailAndPassword(auth,$("newEmail").value.trim(),$("newPassword").value);
+$("authMessage").textContent="Cuenta creada correctamente.";
+}catch(e){$("authMessage").textContent=e.message;}
 };
-
-$("enter").onclick = async () => {
- const email = $("email").value.trim();
- const password = $("password").value;
- $("status").textContent = "Procesando...";
- try {
-  if(creating){
-   const name = $("name").value.trim();
-   if(!name) throw new Error("Escribe tu nombre.");
-   const result = await createUserWithEmailAndPassword(auth,email,password);
-   await updateProfile(result.user,{displayName:name});
-  } else {
-   await signInWithEmailAndPassword(auth,email,password);
-  }
- } catch(error) {
-  $("status").textContent = error.code === "auth/email-already-in-use"
-   ? "Ese correo ya tiene una cuenta."
-   : error.code === "auth/weak-password"
-   ? "La contraseña debe tener al menos 6 caracteres."
-   : error.code === "auth/invalid-credential"
-   ? "Correo o contraseña incorrectos."
-   : error.message;
- }
+$("loginBtn").onclick=async()=>{
+try{await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);}
+catch(e){$("authMessage").textContent="No se pudo ingresar: "+e.message;}
 };
+$("logoutBtn").onclick=()=>signOut(auth);
 
-$("logout").onclick = () => signOut(auth);
-
-onAuthStateChanged(auth,user => {
- $("login").classList.toggle("hidden",!!user);
- $("app").classList.toggle("hidden",!user);
- if(unsubscribe){unsubscribe();unsubscribe=null;}
- if(user){
-  $("welcome").textContent = "Sesión iniciada: "+(user.displayName || user.email);
-  const path = collection(db,"users",user.uid,"clientes");
-  unsubscribe = onSnapshot(path,snapshot => {
-   allClients = snapshot.docs.map(d=>({id:d.id,...d.data()}));
-   renderClients();
-  },error => {
-   $("clients").textContent = "Error al cargar clientes: "+error.message;
-  });
- }
+onAuthStateChanged(auth,async user=>{
+currentUser=user;
+$("auth").classList.toggle("hidden",!!user);
+$("app").classList.toggle("hidden",!user);
+if(user){$("userEmail").textContent=user.email;await refresh();}
 });
 
-$("save").onclick = async () => {
- const user = auth.currentUser;
- const name = $("clientName").value.trim();
- if(!user || !name){
-  $("saveStatus").textContent = "Escribe al menos el nombre del cliente.";
-  return;
- }
- $("save").disabled = true;
- try{
-  await addDoc(collection(db,"users",user.uid,"clientes"),{
-   nombre:name,
-   telefono:$("phone").value.trim(),
-   direccion:$("address").value.trim(),
-   observaciones:$("notes").value.trim(),
-   creado:serverTimestamp()
-  });
-  $("clientName").value="";
-  $("phone").value="";
-  $("address").value="";
-  $("notes").value="";
-  $("saveStatus").textContent="Cliente guardado correctamente.";
- }catch(error){
-  $("saveStatus").textContent="No se pudo guardar: "+error.message;
- }finally{
-  $("save").disabled=false;
- }
-};
-
-function renderClients(){
- const query = $("search").value.toLowerCase();
- const filtered = allClients.filter(c=>
-  [c.nombre,c.telefono,c.direccion].join(" ").toLowerCase().includes(query)
- );
- $("clients").innerHTML="";
- if(!filtered.length){
-  $("clients").textContent="No hay clientes para mostrar.";
-  return;
- }
- filtered.forEach(c=>{
-  const div=document.createElement("div");
-  div.className="customer";
-  const title=document.createElement("strong");
-  title.textContent=c.nombre || "Sin nombre";
-  const phone=document.createElement("p");
-  phone.textContent="Teléfono: "+(c.telefono || "No registrado");
-  const address=document.createElement("p");
-  address.textContent="Dirección: "+(c.direccion || "No registrada");
-  const notes=document.createElement("p");
-  notes.textContent="Observaciones: "+(c.observaciones || "Ninguna");
-  div.append(title,phone,address,notes);
-  $("clients").append(div);
- });
+async function refresh(){
+try{
+const [c,j,h]=await Promise.all([
+getDocs(path("clientes")),getDocs(path("agenda")),getDocs(path("historial"))
+]);
+clients=c.docs.map(d=>({id:d.id,...d.data()}));
+jobs=j.docs.map(d=>({id:d.id,...d.data()}));
+history=h.docs.map(d=>({id:d.id,...d.data()}));
+render();
+}catch(e){say("Error al cargar datos: "+e.message);}
 }
-$("search").oninput=renderClients;
+function clientName(id){return clients.find(c=>c.id===id)?.name||"Cliente eliminado";}
+function fillClientSelect(id){
+$(id).innerHTML=clients.map(c=>`<option value="${c.id}">${safe(c.name)}</option>`).join("");
+}
+function render(){
+$("countClients").textContent=clients.length;
+$("countJobs").textContent=jobs.length;
+fillClientSelect("jobClient");fillClientSelect("historyClient");
+renderClients();renderJobs();renderHistory();renderReminders();
+}
+$("saveClient").onclick=async()=>{
+const name=$("clientName").value.trim();
+if(!name){say("Escribe el nombre del cliente.");return;}
+try{
+await addDoc(path("clientes"),{
+name,phone:$("clientPhone").value.trim(),address:$("clientAddress").value.trim(),
+equipment:$("clientEquipment").value,interval:Number($("clientInterval").value),
+createdAt:serverTimestamp()
+});
+["clientName","clientPhone","clientAddress"].forEach(id=>$(id).value="");
+say("Cliente guardado correctamente.");await refresh();
+}catch(e){say("Error: "+e.message);}
+};
+function renderClients(){
+const term=$("clientSearch").value.toLowerCase();
+const filtered=clients.filter(c=>(c.name+" "+(c.phone||"")).toLowerCase().includes(term));
+$("clientList").innerHTML=filtered.map(c=>`
+<div class="item">
+<strong>${safe(c.name)}</strong><br>
+Teléfono: ${safe(c.phone||"No registrado")}<br>
+Dirección: ${safe(c.address||"No registrada")}<br>
+Equipo: ${safe(c.equipment||"")} · Mantenimiento cada ${c.interval||6} meses
+<br><button class="secondary" data-whatsapp="${safe(c.phone||"")}">WhatsApp</button>
+<button class="danger" data-delete-client="${c.id}">Eliminar</button>
+</div>`).join("")||"<p>No hay clientes registrados.</p>";
+}
+$("clientSearch").oninput=renderClients;
+$("clientList").onclick=async e=>{
+const w=e.target.dataset.whatsapp;
+if(w){const number=w.replace(/\D/g,"");if(number)window.open("https://wa.me/"+number,"_blank");else say("Este cliente no tiene teléfono.");}
+const id=e.target.dataset.deleteClient;
+if(id&&confirm("¿Eliminar este cliente? Su historial y agenda no se borrarán.")){
+await deleteDoc(doc(db,"users",currentUser.uid,"clientes",id));await refresh();
+}
+};
+$("saveJob").onclick=async()=>{
+if(!clients.length){say("Primero registra un cliente.");return;}
+try{
+await addDoc(path("agenda"),{
+clientId:$("jobClient").value,type:$("jobType").value,
+date:$("jobDate").value,time:$("jobTime").value,
+notes:$("jobNotes").value.trim(),createdAt:serverTimestamp()
+});
+$("jobNotes").value="";say("Trabajo agregado a la agenda.");await refresh();
+}catch(e){say("Error: "+e.message);}
+};
+function renderJobs(){
+const date=$("agendaDate").value;
+const list=jobs.filter(j=>!date||j.date===date).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+$("jobList").innerHTML=list.map(j=>`
+<div class="item"><strong>${safe(j.type)}</strong><br>
+${safe(clientName(j.clientId))}<br>
+${safe(j.date||"")} · ${safe(j.time||"")}<br>
+${safe(j.notes||"")}
+<br><button class="danger" data-delete-job="${j.id}">Eliminar</button></div>`).join("")||"<p>No hay trabajos para esta fecha.</p>";
+$("countJobs").textContent=jobs.length;
+$("todayJobs").innerHTML="<h3>Trabajos de hoy</h3>"+jobs.filter(j=>j.date===today()).map(j=>`<div class="item">${safe(j.time)} · ${safe(j.type)} · ${safe(clientName(j.clientId))}</div>`).join("");
+}
+$("agendaDate").onchange=renderJobs;
+$("jobList").onclick=async e=>{
+const id=e.target.dataset.deleteJob;
+if(id&&confirm("¿Eliminar este trabajo?")){
+await deleteDoc(doc(db,"users",currentUser.uid,"agenda",id));await refresh();
+}
+};
+$("saveHistory").onclick=async()=>{
+if(!clients.length){say("Primero registra un cliente.");return;}
+try{
+await addDoc(path("historial"),{
+clientId:$("historyClient").value,type:$("historyType").value,
+date:$("historyDate").value,notes:$("historyNotes").value.trim(),
+createdAt:serverTimestamp()
+});
+$("historyNotes").value="";say("Servicio guardado en el historial.");await refresh();
+}catch(e){say("Error: "+e.message);}
+};
+function renderHistory(){
+const list=[...history].sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+$("historyList").innerHTML=list.map(h=>`
+<div class="item"><strong>${safe(h.type)}</strong><br>
+${safe(clientName(h.clientId))} · ${safe(h.date||"")}<br>
+${safe(h.notes||"")}</div>`).join("")||"<p>Aún no hay servicios registrados.</p>";
+}
+function addMonths(date,months){
+const d=new Date(date+"T12:00:00");
+const day=d.getDate();d.setMonth(d.getMonth()+months);
+if(d.getDate()<day)d.setDate(0);
+return d.toISOString().slice(0,10);
+}
+function renderReminders(){
+const list=clients.map(c=>{
+const services=history.filter(h=>h.clientId===c.id&&h.type==="Mantenimiento").sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+const last=services[0]?.date;
+const due=last?addMonths(last,c.interval||6):"Sin mantenimiento registrado";
+const status=!last?"Sin registro":due<today()?"Vencido":due<=addMonths(today(),1)?"Próximo":"Al día";
+return {...c,due,status};
+});
+$("countLate").textContent=list.filter(c=>c.status==="Vencido").length;
+$("countSoon").textContent=list.filter(c=>c.status==="Próximo").length;
+$("reminderList").innerHTML=list.map(c=>`
+<div class="item"><strong>${safe(c.name)}</strong><br>
+Último mantenimiento: ${safe(history.filter(h=>h.clientId===c.id&&h.type==="Mantenimiento").sort((a,b)=>(b.date||"").localeCompare(a.date||""))[0]?.date||"No registrado")}<br>
+Próximo mantenimiento: ${safe(c.due)}<br>
+Estado: <strong>${safe(c.status)}</strong><br>
+Intervalo: ${c.interval||6} meses</div>`).join("")||"<p>Registra clientes para controlar sus mantenimientos.</p>";
+}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{
+document.querySelectorAll("main section[id^='tab-']").forEach(s=>s.classList.add("hidden"));
+$("tab-"+b.dataset.tab).classList.remove("hidden");
+});
+if("serviceWorker" in navigator){
+window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js").catch(console.error));
+}
 </script>
 </body>
 </html>
