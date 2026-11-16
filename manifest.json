@@ -1,0 +1,24 @@
+
+{
+  "name": "CLIMA CONTROL SC",
+  "short_name": "CLIMA CONTROL",
+  "description": "Sistema profesional de gestión de climatización",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#071525",
+  "theme_color": "#0789ef",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
